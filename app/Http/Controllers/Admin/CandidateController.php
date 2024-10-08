@@ -39,7 +39,7 @@ class CandidateController extends Controller
         try {
             abort_if(! userCan('candidate.view'), 403);
 
-            $query = Candidate::withCount('appliedJobs')->with('user', 'jobRole');
+        $query = Candidate::withCount('appliedJobs')->with('user', 'jobRole');
 
             // verified status
             if ($request->has('ev_status') && $request->ev_status != null) {
@@ -217,6 +217,11 @@ class CandidateController extends Controller
             // create candidate
             $name = $request->name ?? fake()->name();
             $candidate = Candidate::where('user_id', $data[1]->id)->first();
+            $issuedateTime = Carbon::parse($request->birth_date);
+            $issuedate = $request['passport_issue_date'] = $issuedateTime->format('Y-m-d H:i:s');
+            $expirydateTime = Carbon::parse($request->birth_date);
+            $expirydate = $request['passport_expiry_date'] = $expirydateTime->format('Y-m-d H:i:s');
+    
             // $candidate->update([
             $candidate->update([
                 'role_id' => $request->role_id,
@@ -228,15 +233,46 @@ class CandidateController extends Controller
                 'bio' => $request->bio,
                 'marital_status' => $request->marital_status,
                 'birth_date' => $date,
+                'cnic' => $request->cnic,
+                'cnic_issue_date' => $request->cnic_issue_date,
+                'cnic_expiry_date' => $request->cnic_expiry_date,
+                'nationality'=>$request->nationality,
+                'religion'=>$request->religion,
+                // 'age'=>$request->age,
+                'passport_number'=>$request->passport_number,
+                'passport_expiry_date' => $request->passport_expiry_date,
+                'passport_issue_date' => $request->passport_issue_date,
+                'father_name'=>$request->father_name,
+                'declaration_statement'=> $request->declaration_statement,
+                'contact_number' => $request->contact_number,
+                'place_of_birth'=>$request->place_of_birth,
+                
             ]);
-            // Location
-            updateMap($candidate);
+
             // cv upload
             if ($request->cv) {
                 $pdfPath = '/file/candidates/';
                 $pdf = pdfUpload($request->cv, $pdfPath);
                 $candidate->update(['cv' => $pdf]);
+
             }
+            // $request->validate([
+            //     'cv' => 'required',
+            //     'resume_file' => 'required|mimes:pdf|max:5120',
+            // ]);
+    
+            // $candidate = auth()->user()->candidate;
+            // $data['name'] = $request->cv;
+            // $data['candidate_id'] = $candidate->id;
+    
+            // // cv
+            // if ($request->resume_file) {
+            //     $pdfPath = 'file/candidates/';
+            //     $file = uploadFileToPublic($request->resume_file, $pdfPath);
+            //     $data['file'] = $file;
+            // }
+    
+            // CandidateResume::create($data);
 
             // image upload
             if ($request->image) {
@@ -261,7 +297,9 @@ class CandidateController extends Controller
                 $skillsArray = [];
 
                 foreach ($skills as $skill) {
-                    $skill_exists = Skill::where('id', $skill)->orWhere('name', $skill)->first();
+                    $skill_exists = Skill::where('id', $skill)
+                        ->orWhere('name', $skill)
+                        ->first();
 
                     if (! $skill_exists) {
                         $select_tag = Skill::create(['name' => $skill]);
@@ -298,40 +336,44 @@ class CandidateController extends Controller
             $request->validate(['location' => 'required']);
         }
 
-        // try {
-        if ($request->image) {
-            $request->validate(['image' => 'image|mimes:jpeg,png,jpg,gif']);
-        }
-        if ($request->cv) {
-            $request->validate(['cv' => 'mimetypes:application/pdf']);
-        }
-
-        $data = $this->userCreate($request);
-        $candidate = $this->candidateCreate($request, $data);
-        $user = $data[1];
-        $password = $data[0];
-
-        // if mail is configured
-        if (checkMailConfig()) {
-            $candidate_account_auto_activation_enabled = Setting::where('candidate_account_auto_activation', 1)->count();
-
-            // if candidate activation enabled, send account created mail
-            // else, send will be activated mail.
-            if ($candidate_account_auto_activation_enabled) {
-                Notification::route('mail', $user->email)->notify(new CandidateCreateNotification($user, $password));
-            } else {
-                Notification::route('mail', $user->email)->notify(new CandidateCreateApprovalPendingNotification($user, $password));
+        try {
+            if ($request->image) {
+                $request->validate(['image' => 'image|mimes:jpeg,png,jpg,gif']);
             }
+            if ($request->cv) {
+                $request->validate(['cv' => 'mimetypes:application/pdf']);
+            }
+
+            $data = $this->userCreate($request);
+            $candidate = $this->candidateCreate($request, $data);
+            $user = $data[1];
+            $password = $data[0];
+
+            // Location
+            updateMap($candidate);
+
+            // if mail is configured
+            if (checkMailConfig()) {
+                $candidate_account_auto_activation_enabled = Setting::where('candidate_account_auto_activation', 1)->count();
+
+                // if candidate activation enabled, send account created mail
+                // else, send will be activated mail.
+                if ($candidate_account_auto_activation_enabled) {
+                    Notification::route('mail', $user->email)->notify(new CandidateCreateNotification($user, $password));
+                } else {
+                    Notification::route('mail', $user->email)->notify(new CandidateCreateApprovalPendingNotification($user, $password));
+                }
+            }
+
+            flashSuccess(__('candidate_created_successfully'));
+
+            return redirect()->route('candidate.index');
+        } catch (\Throwable $th) {
+            return redirect()->route('candidate.index');
+            // return redirect()
+            //     ->back()
+            //     ->with('error', config('app.debug') ? $th->getMessage() : 'Something went wrong');
         }
-
-        flashSuccess(__('candidate_created_successfully'));
-
-        return redirect()->route('candidate.index');
-        // } catch (\Throwable $th) {
-        //     return redirect()
-        //         ->back()
-        //         ->with('error', config('app.debug') ? $th->getMessage() : 'Something went wrong');
-        // }
     }
 
     /**
@@ -346,8 +388,14 @@ class CandidateController extends Controller
 
             $candidate = Candidate::with('skills', 'languages:id,name', 'profession')->findOrFail($candidate);
             $user = User::with('socialInfo', 'contactInfo')->findOrFail($candidate->user_id);
-            $appliedJobs = $candidate->appliedJobs()->with('company.user', 'category', 'role')->get();
-            $bookmarkJobs = $candidate->bookmarkJobs()->with('company.user', 'category', 'role')->get();
+            $appliedJobs = $candidate
+                ->appliedJobs()
+                ->with('company.user', 'category', 'role')
+                ->get();
+            $bookmarkJobs = $candidate
+                ->bookmarkJobs()
+                ->with('company.user', 'category', 'role')
+                ->get();
 
             return view('backend.candidate.show', compact('candidate', 'user', 'appliedJobs', 'bookmarkJobs'));
         } catch (\Exception $e) {
@@ -378,6 +426,7 @@ class CandidateController extends Controller
             $candidate->load('skills', 'languages:id,name');
             $lat = $candidate->lat ? floatval($candidate->lat) : floatval(setting('default_lat'));
             $long = $candidate->long ? floatval($candidate->long) : floatval(setting('default_long'));
+            
 
             return view('backend.candidate.edit', compact('contactInfo', 'candidate', 'user', 'job_roles', 'professions', 'experiences', 'educations', 'skills', 'candidate_languages', 'lat', 'long'));
         } catch (\Exception $e) {
@@ -538,6 +587,19 @@ class CandidateController extends Controller
                 'bio' => $request->bio,
                 'marital_status' => $request->marital_status,
                 'birth_date' => date('Y-m-d', strtotime($request->birth_date)),
+                'cnic' => $request->cnic,
+                'cnic_issue_date' => $request->cnic_issue_date,
+                'cnic_expiry_date' => $request->cnic_expiry_date,
+                'nationality'=>$request->nationality,
+                'religion'=>$request->religion,
+                // 'age'=>$request->age,
+                'passport_number'=>$request->passport_number,
+                'passport_expiry_date' =>  date('Y-m-d', strtotime($request->passport_expiry_date)),
+                'passport_issue_date' =>  date('Y-m-d', strtotime($request->passport_issue_date)),
+                'father_name'=>$request->father_name,
+                'declaration_statement'=> $request->declaration_statement,
+                'contact_number' => $request->contact_number,
+                'place_of_birth'=>$request->place_of_birth,
             ]);
 
             // password change
@@ -588,7 +650,9 @@ class CandidateController extends Controller
                 $skillsArray = [];
 
                 foreach ($skills as $skill) {
-                    $skill_exists = SkillTranslation::where('skill_id', $skill)->orWhere('name', $skill)->first();
+                    $skill_exists = SkillTranslation::where('skill_id', $skill)
+                        ->orWhere('name', $skill)
+                        ->first();
 
                     if (! $skill_exists) {
                         $select_tag = Skill::create(['name' => $skill]);
@@ -620,12 +684,12 @@ class CandidateController extends Controller
             }
 
             flashSuccess(__('candidate_updated_successfully'));
-
-            return back();
+            return redirect()->route('candidate.index');
+            // return back();
         } catch (\Exception $e) {
             flashError('An error occurred: '.$e->getMessage());
-
-            return back();
+            return redirect()->route('candidate.index');
+            // return back();
         }
     }
 

@@ -19,10 +19,22 @@
                                 {{ __('account_details') }}
                             </div>
                             <div class="card-body row">
-                                <div class="col-md-12">
+                                <div class="col-md-6">
                                     <div class="form-group">
                                         <x-forms.label name="name" />
                                         <x-forms.input type="text" name="name" placeholder="name" />
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <x-forms.label name="father_name" />
+                                        <x-forms.input type="text" name="father_name" placeholder="father_name" value="{{ old('father_name') }}" />
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <x-forms.label name="contact_number" :required="false"/>
+                                        <x-forms.input type="tel" name="contact_number" placeholder="contact_number" />
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -121,28 +133,36 @@
                             </div>
                         </div>
                         <div class="card">
-                            <div class="card-header">
-                                {{ __('files') }}
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="form-group">
-                                            <x-forms.label name="cv" :required="false" />
-                                            <div class="custom-file">
-                                                <input name="cv" type="file"
-                                                    class="custom-file-input @error('cv') is-invalid @enderror">
-                                                <label class="custom-file-label"
-                                                    for="cvInputFile">{{ __('choose_cv') }}</label>
-                                                @error('cv')
-                                                    <span class="error invalid-feedback">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+    <div class="card-header">
+        {{ __('files') }}
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-12">
+            <div class="form-group">
+    <!-- Label for the file input -->
+    <x-forms.label name="cv" :required="false" />
+
+    <!-- File input field -->
+    <div class="custom-file">
+        <input name="cv" type="file" class="custom-file-input @error('cv') is-invalid @enderror" id="cvInputFile">
+        <label class="custom-file-label" for="cvInputFile">{{ __('choose_cv') }}</label>
+
+        <!-- Error message for validation errors -->
+        @error('cv')
+            <span class="error invalid-feedback">{{ $message }}</span>
+        @enderror
+    </div>
+</div>
+
+<!-- Display selected file name -->
+<p id="selectedFileName" style="display: none;"></p>
+
+            </div>
+        </div>
+    </div>
+</div>
+
                     </div>
                     <div class="col-12">
                         <div class="card">
@@ -230,17 +250,42 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="form-group">
-                                            <x-forms.label name="website" :required="false" />
-                                            <input type="text" id="website" name="website"
-                                                value="{{ old('website') }}"
-                                                class="form-control @error('website') is-invalid @enderror"
-                                                placeholder="{{ __('website') }}">
-                                            @error('website')
+                                            <x-forms.label name="place_of_birth" :required="false" />
+                                            <input type="text" id="place_of_birth" name="place_of_birth"
+                                                value="{{ old('place_of_birth') }}"
+                                                class="form-control @error('place_of_birth') is-invalid @enderror"
+                                                placeholder="{{ __('place_of_birth') }}">
+                                            @error('place_of_birth')
                                                 <span class="invalid-feedback" role="alert">{{ __($message) }}</span>
                                             @enderror
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <x-forms.label name="nationality" :required="false" />
+                                            <input type="text" id="nationality" name="nationality"
+                                                value="{{ old('nationality') }}"
+                                                class="form-control @error('nationality') is-invalid @enderror"
+                                                placeholder="{{ __('nationality') }}">
+                                            @error('nationality')
+                                                <span class="invalid-feedback" role="alert">{{ __($message) }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <x-forms.label name="religion" :required="false" />
+                                            <input type="text" id="religion" name="religion"
+                                                value="{{ old('religion') }}"
+                                                class="form-control @error('religion') is-invalid @enderror"
+                                                placeholder="{{ __('religion') }}">
+                                            @error('religion')
+                                                <span class="invalid-feedback" role="alert">{{ __($message) }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <x-forms.label name="birth_date" :required="false" />
                                             <input type="text"
@@ -251,7 +296,134 @@
                                             @enderror
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+
+                                    {{-- <div class="col-md-4">
+                                        <div class="form-group">
+                                            <x-forms.label name="age" :required="false" />
+                                            <input type="number" id="age" name="age"
+                                                value="{{ old('age') }}"
+                                                class="form-control @error('age') is-invalid @enderror"
+                                                placeholder="{{ __('age') }}">
+                                            @error('age')
+                                                <span class="invalid-feedback" role="alert">{{ __($message) }}</span>
+                                            @enderror
+                                        </div>
+                                    </div> --}}
+                                    
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <x-forms.label name="passport_number" :required="false" />
+                                            <input type="text" id="passport_number" name="passport_number"
+                                                value="{{ old('passport_number') }}"
+                                                class="form-control @error('passport_number') is-invalid @enderror"
+                                                placeholder="{{ __('passport_number') }}">
+                                            @error('passport_number')
+                                                <span class="invalid-feedback" role="alert">{{ __($message) }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-lg-4">
+                                                        <x-forms.label :required="true" name="passport_issue_date"
+                                                            class="body-font-4 d-block text-gray-900 rt-mb-8" />
+                                                        <div class="fromGroup">
+                                                            <div
+                                                                class="d-flex align-items-center form-control-icon date datepicker">
+                                                                <input type="text" name="passport_issue_date"
+                                                                    value="{{old('passport_issue_date') }}"
+                                                                    id="issuedate" placeholder="dd/mm/yyyy"
+                                                                    class="form-control border-cutom @error('passport_issue_date') is-invalid @enderror" />
+                                                                <!-- <span class="input-group-addon input-group-text-custom">
+                                                                    <x-svg.calendar-icon />
+                                                                </span> -->
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-4">
+                                                        <x-forms.label :required="true" name="passport_expiry_date"
+                                                            class="body-font-4 d-block text-gray-900 rt-mb-8" />
+                                                        <div class="fromGroup">
+                                                            <div
+                                                                class="d-flex align-items-center form-control-icon date datepicker">
+                                                                <input type="text" name="passport_expiry_date"
+                                                                    value="{{old('passport_expiry_date') }}"
+                                                                    id="expirydate" placeholder="dd/mm/yyyy"
+                                                                    class="form-control border-cutom @error('passport_expiry_date') is-invalid @enderror" />
+                                                                <!-- <span class="input-group-addon input-group-text-custom">
+                                                                    <x-svg.calendar-icon />
+                                                                </span> -->
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                    
+
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <x-forms.label name="cnic" :required="false" />
+                                            <input type="text" id="cnic" name="cnic"
+                                                value="{{ old('cnic') }}"
+                                                class="form-control @error('cnic') is-invalid @enderror"
+                                                placeholder="{{ __('cnic') }}">
+                                            @error('cnic')
+                                                <span class="invalid-feedback" role="alert">{{ __($message) }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <x-forms.label name="cnic_issue_date" :required="false" />
+                                            <input type="date" id="cnic_issue_date" name="cnic_issue_date"
+                                                value="{{ old('cnic_issue_date') }}"
+                                                class="form-control @error('cnic_issue_date') is-invalid @enderror"
+                                                placeholder="{{ __('cnic_issue_date') }}">
+                                            @error('cnic_issue_date')
+                                                <span class="invalid-feedback" role="alert">{{ __($message) }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <x-forms.label name="cnic_expiry_date" :required="false" />
+                                            <input type="date" id="cnic_expiry_date" name="cnic_expiry_date"
+                                                value="{{ old('cnic_expiry_date') }}"
+                                                class="form-control @error('cnic_expiry_date') is-invalid @enderror"
+                                                placeholder="{{ __('cnic_expiry_date') }}">
+                                            @error('cnic_expiry_date')
+                                                <span class="invalid-feedback" role="alert">{{ __($message) }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                                  
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <x-forms.label name="declaration_statement" :required="false" />
+                                            <input type="text" id="declaration_statement" name="declaration_statement"
+                                                value="{{ old('declaration_statement') }}"
+                                                class="form-control @error('declaration_statement') is-invalid @enderror"
+                                                placeholder="{{ __('declaration_statement') }}">
+                                            @error('declaration_statement')
+                                                <span class="invalid-feedback" role="alert">{{ __($message) }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <x-forms.label name="website" :required="false" />
+                                            <input type="text" id="website" name="website"
+                                                value="{{ old('website') }}"
+                                                class="form-control @error('website') is-invalid @enderror"
+                                                placeholder="{{ __('website') }}">
+                                            @error('website')
+                                                <span class="invalid-feedback" role="alert">{{ __($message) }}</span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    
+                                    
+                                   
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <x-forms.label name="marital_status" :required="false" />
                                             <select id="marital_status" name="marital_status"
@@ -351,9 +523,30 @@
 
     @include('map::links')
 @endsection
+@section('frontend_links')
+    <link rel="stylesheet" href="{{ asset('frontend') }}/assets/css/bootstrap-datepicker.min.css">
+    <!-- >=>Leaflet Map<=< -->
+    <x-map.leaflet.map_links />
+    <x-map.leaflet.autocomplete_links />
+    @include('map::links')
+    <style>
+    
+
+        .input-group-text-custom {
+            max-height: 48px;
+            padding: 12px;
+            background-color: #e9ecef;
+            border-radius: 0 5px 5px 0;
+        }
+
+  
+    </style>
+
 
 @section('script')
     @livewireScripts
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> -->
+    <script src="{{ asset('frontend/assets/js/bootstrap-datepicker.min.js') }}"></script>
     <script>
         $(document).ready(function() {
             $('.select21').select2();
@@ -363,6 +556,7 @@
             $('.select21').select2();
         })
     </script>
+
     @stack('js')
     <script src="{{ asset('backend') }}/plugins/dropify/js/dropify.min.js"></script>
     @if (app()->getLocale() == 'ar')
@@ -374,6 +568,35 @@
             $('#defaulthide').addClass('d-block')
             $('#defaulthide').removeClass('d-none')
         });
+        //init datepicker
+    $("#issuedate").attr("autocomplete", "off");
+    //init datepicker
+    $('#issuedate').datepicker({
+    format: 'dd-mm-yyyy',
+    isRTL: "{{ app()->getLocale() == 'ar' ? true : false }}",
+    language: "{{ app()->getLocale() }}",
+    endDate: new Date() // Restrict selectable dates up to today
+});
+
+      // Listen for the change event on the file input
+      document.getElementById('cvInputFile').addEventListener('change', function(event) {
+        // Get the selected file
+        const selectedFile = event.target.files[0];
+
+        // Display the file name
+        const selectedFileNameElement = document.getElementById('selectedFileName');
+        selectedFileNameElement.style.display = 'block';
+        selectedFileNameElement.textContent = selectedFile ? selectedFile.name : '';
+    });
+    $("#expirydate").attr("autocomplete", "off");
+    //init datepicker
+    $('#expirydate').datepicker({
+    format: 'dd-mm-yyyy',
+    isRTL: "{{ app()->getLocale() == 'ar' ? true : false }}",
+    language: "{{ app()->getLocale() }}",
+    startDate: new Date() // Restrict selectable dates starting from today
+});
+
         // dropify image
         $('.dropify').dropify();
         //init datepicker

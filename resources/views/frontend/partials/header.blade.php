@@ -250,6 +250,7 @@ config('templatecookie.default_language'))->first();
                             <ul class="menu-active-classes">
                                 @if (isset($public_menu_lists))
                                 @foreach ($public_menu_lists as $public_menu_list)
+                                @if($public_menu_list['en_title'] != 'Companies')
                                 <li class="menu-item">
                                     @php
                                     // Check if the URL starts with "http" or "https" to identify external links
@@ -268,6 +269,7 @@ config('templatecookie.default_language'))->first();
                                         @endif
                                     </a>
                                 </li>
+                                @endif
                                 @endforeach
                                 @if ($custom_pages->where('show_header', 1)->count() > 0 )
                                 <li class="menu-item extra-page d-none d-lg-inline-block">
@@ -435,7 +437,7 @@ config('templatecookie.default_language'))->first();
                         $currency_count = count($headerCurrencies) && count($headerCurrencies) > 1;
                         $current_currency_code = currentCurrencyCode();
                         @endphp
-                        <div class="dropdown xs:tw-inline-flex tw-hidden">
+                        {{-- <div class="dropdown xs:tw-inline-flex tw-hidden">
                             <button class="btn {{ count($headerCurrencies) ? 'dropdown-toggle' : '' }}" type="button"
                                 id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
                                 {{ $current_currency_code }}
@@ -455,7 +457,7 @@ config('templatecookie.default_language'))->first();
                                 @endforeach
                             </ul>
                             @endif
-                        </div>
+                        </div> --}}
                         @endif
                         @if ($setting->app_country_type === 'multiple_base')
                         <form action="{{ route('website.job') }}" method="GET" id="search-form"
@@ -738,8 +740,13 @@ config('templatecookie.default_language'))->first();
                             @guest
                             <ul class="list-unstyled tw-flex tw-flex-wrap tw-gap-3 tw-items-center tw-justify-between">
                                 <li>
+                                    <a href="{{ route('register') }}" class="btn btn-outline-light">Register</a>
+                                </li>
+
+                                <li>
                                     <a href="{{ route('login') }}" class="btn btn-outline-light">{{ __('sign_in') }}</a>
                                 </li>
+
                                 <li class="d-none d-sm-block">
                                     <a href="{{ route('company.job.create') }}" class="btn btn-light">{{ __('post_job')
                                         }}
